@@ -35,7 +35,8 @@ class App extends Component {
         {id: 'b', user: 'Jonathan Saylor', amount: '42', date: ''},
         {id: 'c', user: 'Michael Wright', amount: '50', date: ''},
         {id: 'd', user: 'Albert Martinez', amount: '99', date: ''},
-      ]
+      ],
+      donateAmount: 5
     }
   }
 
@@ -120,9 +121,9 @@ class App extends Component {
                 }}
                 value={this.state.nameValue}
                 onChange={(e) => {this.onChangeName(e.target.value)}}
-                onSelect={(item) => {
-                  console.log(item);
-                  this.onChangeName(item.name);
+                onSelect={(name) => {
+                  console.log(name);
+                  this.onChangeName(name);
                   this.onSetName()
                 }}
             />
@@ -133,7 +134,12 @@ class App extends Component {
       }
       { this.state.name &&
       <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', animation: 'myFadeIn 2s'}}>
-        <Button color={'pink'}>Donate $5!</Button>
+        Amount: <Input
+        onChange={(e) => {
+          this.setState({donateAmount: e.target.value})
+        }}
+          style={{marginBottom: '.75rem'}} type="number" required value={this.state.donateAmount}></Input>
+        <Button color={'pink'}>Donate ${this.state.donateAmount}!</Button>
       </div>
       }
       <h3>Leaderboard</h3>
