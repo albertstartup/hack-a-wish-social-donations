@@ -9,6 +9,10 @@
     "start": "tsc && node dist/server.js",
     "heroku-postbuild": "cd react-ui/ && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
   },
+  "cacheDirectories": [
+    "node_modules",
+    "react-ui/node_modules"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {

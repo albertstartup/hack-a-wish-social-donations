@@ -34,7 +34,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const socket = io('http://localhost:1234');
+    const socket = io('http://localhost:80');
 
     socket.on('connect', () => {
       console.log('conncted')
