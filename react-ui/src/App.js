@@ -36,7 +36,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const socket = io(`127.0.0.1`);
+    const socket = io(`https://wish-test1.herokuapp.com/`);
 
     socket.on('connect', () => {
       console.log('conncted')
