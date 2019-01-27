@@ -7,6 +7,8 @@ const io = require('socket.io')(http);
 import {Socket} from 'socket.io';
 import path from 'path';
 
+const port = process.env.PORT;
+
 app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
 
 app.get("/", (req: Request, res: Response) => {
@@ -29,4 +31,4 @@ setInterval(() => {
     console.log('newDonation: ', newDonation);
 }, 4000);
 
-http.listen(80, () => console.log(`Listening on port: ${80}`));
+http.listen(port, () => console.log(`Listening on port: ${port}`));
