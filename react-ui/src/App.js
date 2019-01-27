@@ -16,6 +16,7 @@ const styles = {
 };
 
 window._ = _;
+window.envfind = process.env;
 
 class App extends Component {
   constructor(props) {
@@ -34,7 +35,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const socket = io('http://localhost:80');
+    const socket = io(`http://localhost:${process.env.REACT_APP_PORT}`);
 
     socket.on('connect', () => {
       console.log('conncted')
