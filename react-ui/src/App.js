@@ -35,7 +35,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const socket = io(`http://localhost:${process.env.REACT_APP_PORT}`);
+    const socket = io(`http://127.0.0.1:${process.env.REACT_APP_PORT}`);
 
     socket.on('connect', () => {
       console.log('conncted')
