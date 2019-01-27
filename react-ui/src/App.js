@@ -8,6 +8,10 @@ import styled from 'styled-components';
 import Radium from 'radium';
 import io from 'socket.io-client';
 
+import { Input, Button } from 'semantic-ui-react'
+import 'semantic-ui-css/semantic.min.css'
+const AutoComplete = require('react-autocomplete');
+
 const styles = {
   fadeIn: {
     animation: 'x 1s',
@@ -36,11 +40,17 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const socket = io(`https://wish-test1.herokuapp.com/`);
+    let socket;
+
+    if (process.env.NODE_ENV === 'production') {
+      socket = io(`https://wish-test1.herokuapp.com/`);
+    } else {
+      socket = io(`http://localhost:4242/`);
+    }
 
     socket.on('connect', () => {
       console.log('conncted')
-    })
+    });
 
     socket.on('newDonation', (newDonation) => {
       console.log('newDonation: ', newDonation);
@@ -59,11 +69,73 @@ class App extends Component {
     });
   }
 
+  onChangeName(value) {
+    this.setState({
+      nameValue: value
+    })
+  }
+
+  onSetName() {
+    this.setState((prevState) => {
+      return {
+        name: prevState.nameValue
+      };
+    });
+  }
+
   render() {
     return <div style={{display: 'flex', alignItems: 'center', marginTop: '2rem', flexDirection: 'column'}}>
-      <div style={{display: 'flex'}}>
-
+      <h3>Donate:</h3>
+      { !this.state.name &&
+      <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column'}}>
+        <form style={{display: 'flex', alignItems: 'center', flexDirection: 'column'}} onSubmit={(e) => {e.preventDefault(); this.onSetName()}}>
+          <h4>Set your name:</h4>
+          <div>
+            <AutoComplete
+                required
+                menuStyle={{
+                  position: 'static' // Pushes down other elements
+                }}
+                getItemValue={(item) => {
+                  return item.name;
+                }}
+                // items={_.map(this.props.optionValues, (value, key) => {
+                //   return {key: key, value: value};
+                // })}
+                items={[
+                  {name: 'Raffaela Camera'},
+                  {name: 'Amber Hameed'},
+                  {name: 'Christina Kosmowski'},
+                  {name: 'Milana Rabkin'},
+                  {name: 'Tyler McPartland'},
+                  {name: 'Bo Pearl'},
+                  {name: 'Jonathan Shokrian'}
+                ]}
+                shouldItemRender={(item, queryChar) => {
+                  return item.name.toLowerCase().indexOf(queryChar.toLowerCase()) > -1
+                }}
+                renderItem={(item, highlighted) => {
+                  return <div style={{ backgroundColor: highlighted ? '#eee' : 'white'}}
+                              key={item.name}>{item.name}</div>;
+                }}
+                value={this.state.nameValue}
+                onChange={(e) => {this.onChangeName(e.target.value)}}
+                onSelect={(item) => {
+                  console.log(item);
+                  this.onChangeName(item.name);
+                  this.onSetName()
+                }}
+            />
+          </div>
+          <Button style={{marginTop: '1rem', marginLeft: '1rem', marginBottom: '4rem'}} color={'blue'}>Set Name</Button>
+        </form>
       </div>
+      }
+      { this.state.name &&
+      <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', animation: 'myFadeIn 2s'}}>
+        <Button color={'pink'}>Donate $5!</Button>
+      </div>
+      }
       <h3>Leaderboard</h3>
       <div>
         {
