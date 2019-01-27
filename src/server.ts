@@ -12,7 +12,7 @@ const assert = require('assert');
 const prod_mongo_url = process.env.MONGODB_URI;
 
 const mongo_url = prod_mongo_url || 'mongodb://localhost:27017';
-console.log('mongo url: ',mongo_url);
+console.log('mongo url: ', mongo_url);
 
 const dbName = 'wish1';
 
@@ -38,7 +38,10 @@ const insertDocuments = function(db, callback) {
 
 // @ts-ignore
 MongoClient.connect(mongo_url, function(err, client) {
-    assert.equal(null, err);
+    if (err) {
+        console.error('error while connecting to mongo_url: ', err);
+    }
+
     console.log("Connected successfully to mongo");
 
     const db = client.db('heroku_fm6l65k6');
