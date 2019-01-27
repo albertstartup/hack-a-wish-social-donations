@@ -7,10 +7,12 @@ import _ from 'underscore';
 import styled from 'styled-components';
 import Radium from 'radium';
 import io from 'socket.io-client';
+import request from 'request-promise-native';
 
 import { Input, Button } from 'semantic-ui-react'
 import 'semantic-ui-css/semantic.min.css'
 const AutoComplete = require('react-autocomplete');
+
 
 const styles = {
   fadeIn: {
@@ -22,6 +24,8 @@ const styles = {
 window._ = _;
 window.envfind = process.env;
 window.wio = io;
+
+let api_url;
 
 class App extends Component {
   constructor(props) {
@@ -36,18 +40,20 @@ class App extends Component {
         {id: 'c', user: 'Michael Wright', amount: '50', date: ''},
         {id: 'd', user: 'Albert Martinez', amount: '99', date: ''},
       ],
-      donateAmount: 5
+      donateAmount: 5,
+      name: ''
     }
   }
 
   componentDidMount() {
-    let socket;
 
     if (process.env.NODE_ENV === 'production') {
-      socket = io(`https://wish-test1.herokuapp.com/`);
+      api_url = 'https://wish-test1.herokuapp.com/';
     } else {
-      socket = io(`http://localhost:4242/`);
+      api_url = 'http://localhost:4242/';
     }
+
+    const socket = io(api_url);
 
     socket.on('connect', () => {
       console.log('conncted')
@@ -81,6 +87,17 @@ class App extends Component {
       return {
         name: prevState.nameValue
       };
+    });
+  }
+
+  async onDonate() {
+    await request.post({
+      uri: `${api_url}addDonation`,
+      method: 'POST',
+      json: {
+        name: this.state.name,
+        amount: this.state.donateAmount
+      }
     });
   }
 
@@ -133,21 +150,25 @@ class App extends Component {
       </div>
       }
       { this.state.name &&
-      <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', animation: 'myFadeIn 2s'}}>
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        this.onDonate();
+      }}
+          style={{display: 'flex', alignItems: 'center', flexDirection: 'column', animation: 'myFadeIn 2s'}}>
         Amount: <Input
         onChange={(e) => {
           this.setState({donateAmount: e.target.value})
         }}
-          style={{marginBottom: '.75rem'}} type="number" required value={this.state.donateAmount}></Input>
+          style={{marginBottom: '.75rem'}} type="number" required value={this.state.donateAmount}/>
         <Button color={'pink'}>Donate ${this.state.donateAmount}!</Button>
-      </div>
+      </form>
       }
       <h3>Leaderboard</h3>
       <div>
         {
           _.map(this.state.donations, (donation) => {
             return <div key={donation.id} style={{marginTop: '1rem', animation: 'myFadeIn 2s'}}>
-                  {donation.user} donated {donation.amount}!
+                  {donation.user} donated ${donation.amount}!
             </div>
           })
         }

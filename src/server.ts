@@ -8,13 +8,12 @@ import {Socket} from 'socket.io';
 import path from 'path';
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
+const cors = require('cors');
 
 const prod_mongo_url = process.env.MONGODB_URI;
 
 const mongo_url = prod_mongo_url || 'mongodb://localhost:27017';
 console.log('mongo url: ', mongo_url);
-
-const dbName = 'wish1';
 
 // @ts-ignore
 const insertDocuments = function(db, callback) {
@@ -37,6 +36,17 @@ const insertDocuments = function(db, callback) {
 };
 
 // @ts-ignore
+const insertDonation = (db, name, amount, callback) => {
+    const collection = db.collection('donations');
+
+    collection.insert({name: name, amount: amount, date: new Date()},
+        callback);
+};
+
+// @ts-ignore
+let db;
+
+// @ts-ignore
 MongoClient.connect(mongo_url, function(err, client) {
     if (err) {
         console.error('error while connecting to mongo_url: ', err);
@@ -44,19 +54,32 @@ MongoClient.connect(mongo_url, function(err, client) {
 
     console.log("Connected successfully to mongo");
 
-    const db = client.db('heroku_fm6l65k6');
-
-    insertDocuments(db, function() {
-        client.close();
-    });
+    db = client.db('heroku_fm6l65k6');
 });
 
 const port = process.env.PORT || 4242;
+
+app.use(cors());
+app.use(express.json());
 
 app.use(express.static(path.resolve(__dirname, '../react-ui/build')));
 
 app.get("/", (req: Request, res: Response) => {
     res.send("got root working")
+});
+
+app.post("/addDonation", (req: Request, res: Response) => {
+    if (req.body && req.body.name && req.body.amount) {
+        // @ts-ignore
+        insertDonation(db, req.body.name, req.body.amount, (err, doc) => {
+            console.log('doc:', doc);
+            const donation = doc.ops[0];
+            io.emit('newDonation', {user: donation.name, amount: donation.amount, id: donation._id});
+            res.send(`added donation: ${req.body.name}:${req.body.amount}`);
+        })
+    } else {
+        res.send({error: 'adddonation missing fields'})
+    }
 });
 
 app.get('*', function(request: Request, response: Response) {
@@ -67,12 +90,12 @@ io.on('connection', (socket: Socket) => {
     console.log('a user connection');
 });
 
-let counter = 1;
-setInterval(() => {
-    const newDonation = {user: 'Ken', amount: counter*5, id: counter};
-    counter++;
-    io.emit('newDonation', newDonation);
-    console.log('newDonation: ', newDonation);
-}, 8000);
+// let counter = 1;
+// setInterval(() => {
+//     const newDonation = {user: 'Ken', amount: counter*5, id: counter};
+//     counter++;
+//     io.emit('newDonation', newDonation);
+//     console.log('newDonation: ', newDonation);
+// }, 8000);
 
 http.listen(port, () => console.log(`Listening on port: ${port}`));
